@@ -2,7 +2,9 @@ import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/commo
 import { CatsService } from './cats.service';
 import { CreateCatDto } from './dto/create-cat.dto';
 import { UpdateCatDto } from './dto/update-cat.dto';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Cats')//esto es para ordenar el swageer
 @Controller('cats')
 export class CatsController {
   constructor(private readonly catsService: CatsService) {}
