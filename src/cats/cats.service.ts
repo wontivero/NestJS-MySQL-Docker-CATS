@@ -11,38 +11,59 @@ export class CatsService {
   //ESto  habilita el find(), Create(), etc. es como agregar la tabla de la BD
   constructor(
     @InjectRepository(Cat)
-    private catRepository: Repository<Cat>,
+    private catsRepository: Repository<Cat>,
 
     @InjectRepository(Breed)
-    private breedRepository: Repository<Breed>,
+    private breedsRepository: Repository<Breed>,
   ) {}
 
   async create(createCatDto: CreateCatDto) {
+    const breed = await this.breedsRepository.findOneBy({
+      name: createCatDto.breed,
+    }); //createCatDto.breed viene a ser el campo breed q envia en el post cuando se crea un gato
 
-    const breed = await this.breedRepository.findOneBy({name: createCatDto.breed}) //createCatDto.breed viene a ser el campo breed q envia en el post cuando se crea un gato
-
-    if (!breed){
+    if (!breed) {
       throw new BadRequestException('Breed not found');
     }
 
-    const newCat = this.catRepository.create({...createCatDto, breed});//con los ... copio el objeto createCatDto y le agrego el breed completo q encontre con la busqueda de la linea 22
-    return await this.catRepository.save(newCat);
+    const newCat = this.catsRepository.create({ ...createCatDto, breed }); //con los ... copio el objeto createCatDto y le agrego el breed completo q encontre con la busqueda de la linea 22
+    return await this.catsRepository.save(newCat);
   }
 
   async findAll() {
-    return await this.catRepository.find();
+    return await this.catsRepository.find();
   }
 
   async findOne(id: number) {
-    return await this.catRepository.findOneBy({ id });
+    return await this.catsRepository.findOneBy({ id });
   }
 
   async update(id: number, updateCatDto: UpdateCatDto) {
-    //return await this.catRepository.update(id, updateCatDto);
-    return
+    const cat = await this.catsRepository.findOneBy({ id });
+
+    if (!cat) {
+      throw new BadRequestException('Cat not found');
+    }
+
+    let breed;
+    if (updateCatDto.breed) {
+      breed = await this.breedsRepository.findOneBy({
+        name: updateCatDto.breed,
+      });
+
+      if (!breed) {
+        throw new BadRequestException('Breed not found');
+      }
+    }
+
+    return await this.catsRepository.save({
+      ...cat,
+      ...updateCatDto,
+      breed,
+    });
   }
 
   async remove(id: number) {
-    return await this.catRepository.softDelete({ id });
+    return await this.catsRepository.softDelete({ id });
   }
 }
